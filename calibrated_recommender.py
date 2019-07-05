@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 def compute_genre_distr(items):
     """Compute the genre distribution for a given list of Items."""
@@ -129,29 +130,6 @@ def calib_recommend(items, interacted_distr, topn, lmbda=0.5):
 
 
 
-def compute_utility(reco_items, interacted_distr, lmbda=0.5):
-    """
-    Our objective function for computing the utility score for
-    the list of recommended items.
-
-    lmbda : float, 0.0 ~ 1.0, default 0.5
-        Lambda term controls the score and calibration tradeoff,
-        the higher the lambda the higher the resulting recommendation
-        will be calibrated. Lambda is keyword in Python, so it's
-        lmbda instead ^^
-    """
-    reco_distr = compute_genre_distr(reco_items)
-    kl_div = compute_kl_divergence(interacted_distr, reco_distr)
-
-    total_score = 0.0
-    for item in reco_items:
-        total_score += item.score
-
-    # kl divergence is the lower the better, while score is
-    # the higher the better so remember to negate it in the calculation
-    utility = (1 - lmbda) * total_score - lmbda * kl_div
-    return utility
-
 
 def calib_recommend(items, interacted_distr, topn, lmbda=0.5):
     """
@@ -175,3 +153,25 @@ def calib_recommend(items, interacted_distr, topn, lmbda=0.5):
         calib_reco.append(best_item)
 
     return calib_reco
+
+def distr_comparison_plot(interacted_distr, reco_distr, width=0.3):
+    # the value will automatically be converted to a column with the
+    # column name of '0'
+    interacted = pd.DataFrame.from_dict(interacted_distr, orient='index')
+    reco = pd.DataFrame.from_dict(reco_distr, orient='index')
+    df = interacted.join(reco, how='outer', lsuffix='_interacted')
+
+    n = df.shape[0]
+    index = np.arange(n)
+    plt.barh(index, df['0_interacted'], height=width, label='interacted distr')
+    plt.barh(index + width, df['0'], height=width, label='reco distr')
+    plt.yticks(index, df.index)
+    plt.legend(bbox_to_anchor=(1, 0.5))
+    plt.title('Genre Distribution between User Historical Interaction v.s. Recommendation')
+    plt.ylabel('Genre')
+    plt.show()
+
+def show_genre_dist(items_interacted):
+    # we can check that the probability does in fact add up to 1
+    print(compute_genre_distr(items_interacted))
+

@@ -1,3 +1,6 @@
+import pandas as pd
+import numpy as np
+
 class Item:
     """
     Data holder for our item.
@@ -40,3 +43,15 @@ def create_item_mapping(df_item, item_col, title_col, genre_col):
         item_mapping[item_id] = item
 
     return item_mapping
+
+def read_steam_games(data_filepath):
+    return pd.read_csv('{}/steam_games.csv'.format(data_filepath), index_col="Unnamed: 0")
+
+def read_user_item_playtime(data_filepath):
+    user_items_playtime_ = '{}/user_items_playtime.csv'.format(data_filepath)
+    return pd.read_csv(user_items_playtime_)
+
+def normalize_hours_matrix(hour_matrix):
+    # nonlinear scaling (normalize hours into 0-1 interval for rating)
+    xmax = 50 * 60  # 50 hrs
+    return np.tanh(hour_matrix * 2/ xmax)

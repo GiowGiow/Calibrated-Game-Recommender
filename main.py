@@ -1,18 +1,15 @@
-import pandas as pd
-import numpy as np
 import time
 from scipy.sparse import csr_matrix
 from implicit.bpr import BayesianPersonalizedRanking
 from implicit.evaluation import train_test_split, precision_at_k
-import matplotlib.pyplot as plt
-from ItemClass import create_item_mapping
+from ItemClass import *
 from calibrated_recommender import *
 
 # Folder containing CSVs
 DATA_FILEPATH = 'data_csv'
 
 # Define settings
-topn = 5
+topn = 10
 user_id = 46546
 lmbda = 0.5
 
@@ -22,21 +19,19 @@ title_col = "name"
 genre_col = "genres"
 
 # Read Game info dataframe
-df_games = pd.read_csv('{}/steam_games.csv'.format(DATA_FILEPATH), index_col="Unnamed: 0")
+df_games = read_steam_games(DATA_FILEPATH)
 df_games['item_id'] = df_games.index
-#print(df_games.iloc[10, 0])
 
 # Create Item Mapping
 item_mapping = create_item_mapping(df_games, item_col, title_col, genre_col)
 
 # Read matrix item/playtime
-user_items_playtime_ = '{}/user_items_playtime.csv'.format(DATA_FILEPATH)
-df_matrix = pd.read_csv(user_items_playtime_)
+df_matrix = read_user_item_playtime(DATA_FILEPATH)
+
+# Create index for items
 index2item = pd.Series(list(df_matrix.columns.values), dtype="category").cat.categories
 
-# nonlinear scaling (normalize hours into 0-1 interval for rating)
-xmax = 50 * 60  # 50 hrs
-df_scaled_matrix = np.tanh(df_matrix * 2 / xmax)
+df_scaled_matrix = normalize_hours_matrix(df_matrix)
 
 # compress matrix
 csr_df_matrix = csr_matrix(df_scaled_matrix)
@@ -47,9 +42,6 @@ user_item_train, user_item_test = train_test_split(csr_df_matrix, train_percenta
 bpr = BayesianPersonalizedRanking(iterations=10)
 bpr.fit(user_item_train.T.tocsr())
 
-# look at some user
-user_id = 13584
-
 print(user_item_train[user_id])
 interacted_ids = user_item_train[user_id].nonzero()[1]
 index2item = index2item.astype('int32')
@@ -58,58 +50,25 @@ interacted_items = [item_mapping[index2item[index]] for index in interacted_ids 
                     index2item[index] in item_mapping.keys()]
 
 # it returns the recommended index and their corresponding score
-topn = 100
 reco = bpr.recommend(user_id, user_item_train, N=topn)
 print(reco)
 
 # map the index to Item
 reco_items = [item_mapping[index2item[index]] for index, _ in reco if index2item[index] in item_mapping.keys()]
-
 print(reco_items)
 
 
-
-
 # we can check that the probability does in fact add up to 1
-# np.array(list(interacted_distr.values())).sum()
-print(interacted_items)
 interacted_distr = compute_genre_distr(interacted_items)
-print(interacted_distr)
 
 reco_distr = compute_genre_distr(reco_items[:topn])
-
 
 # change default style figure and font size
 plt.rcParams['figure.figsize'] = 10, 8
 plt.rcParams['font.size'] = 12
 
-
-def distr_comparison_plot(interacted_distr, reco_distr, width=0.3):
-    # the value will automatically be converted to a column with the
-    # column name of '0'
-    interacted = pd.DataFrame.from_dict(interacted_distr, orient='index')
-    reco = pd.DataFrame.from_dict(reco_distr, orient='index')
-    df = interacted.join(reco, how='outer', lsuffix='_interacted')
-
-    n = df.shape[0]
-    index = np.arange(n)
-    plt.barh(index, df['0_interacted'], height=width, label='interacted distr')
-    plt.barh(index + width, df['0'], height=width, label='reco distr')
-    plt.yticks(index, df.index)
-    plt.legend(bbox_to_anchor=(1, 0.5))
-    plt.title('Genre Distribution between User Historical Interaction v.s. Recommendation')
-    plt.ylabel('Genre')
-    plt.show()
-
-
 distr_comparison_plot(interacted_distr, reco_distr)
-
-
 compute_kl_divergence(interacted_distr, reco_distr)
-
-
-
-
 
 items = generate_item_candidates(bpr, user_item_train, user_id, index2item, item_mapping)
 print('number of item candidates:', len(items))
