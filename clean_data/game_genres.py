@@ -4,7 +4,7 @@ import ast
 import numpy as np
 
 filepath = '../data/steam_games.json'
-writefilepath = './game_genres.csv'
+writefilepath = '../data_csv/game_genres.csv'
 
 df = pd.DataFrame(columns=["game_name", "genres"])
 i = 0

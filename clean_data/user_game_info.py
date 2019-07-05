@@ -5,6 +5,7 @@ import pandas as pd
 max_game_id = 1000
 
 filepath = '../data/australian_users_items.json'
+write_filepath = '../data_csv/user_game_info.csv'
 df1 = pd.DataFrame(columns = ['userid', 'game_names'])
 
 with open(filepath) as f:
@@ -91,6 +92,6 @@ with open(filepath) as f:
 df = df1.merge(df2, how='left', on='userid').merge(df3.drop_duplicates(subset=['userid']), how='left', on='userid')
 df = df.fillna(0)
 
-writefilepath = './user_game_info.csv'
-df.to_csv(writefilepath, header=False, index=False)
+
+df.to_csv(write_filepath, header=False, index=False)
 

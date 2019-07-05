@@ -9,6 +9,9 @@ To run this project you will need:
  - Pandas
  - Implicit
 
+## Treat data
+Everything related to treat the data is on clean_data folder, you can use your own, or our small preprocessed dataset
+
 ## How to run
 python3 recommender.py
 

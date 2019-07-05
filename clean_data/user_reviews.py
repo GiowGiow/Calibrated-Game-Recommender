@@ -4,7 +4,7 @@ import ast
 import numpy as np
 
 filepath = '../data/steam_reviews.json'
-writefilepath = './user_reviews.csv'
+writefilepath = '../data_csv/user_reviews.csv'
 
 df = pd.DataFrame(columns = ["userid","reviews"])
 i = 0

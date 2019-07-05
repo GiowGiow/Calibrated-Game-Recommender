@@ -6,7 +6,7 @@ import numpy as np
 from collections import OrderedDict
 
 filepath = './user_items.json'
-writefilepath = './user_items_playtime_' + str(max_item_id) + '.csv'
+writefilepath = '../data_csv/user_items_playtime_' + str(max_item_id) + '.csv'
 
 data = []
 game_ids_valid = set()  # We only want to have game ids that appear in any user's game list

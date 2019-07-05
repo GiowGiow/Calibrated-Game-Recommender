@@ -5,7 +5,7 @@ import pandas as pd
 max_game_id = 100
 
 filepath = '../data/australian_users_items.json'
-writefilepath = './user_game_names_' + str(max_game_id) + '.csv'
+writefilepath = '../data_csv/user_game_names_' + str(max_game_id) + '.csv'
 
 # max_game_id = 99920 for 100k cap
 # 				= 19990 for 20k cap

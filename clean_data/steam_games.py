@@ -3,7 +3,7 @@ import json
 import pandas as pd
 
 filepath = '../data/steam_games.json'
-writefilepath = './steam_games.csv'
+writefilepath = '../data_csv/steam_games.csv'
 
 
 df = pd.DataFrame(columns = ['name','genres','publisher','developer','price'])
